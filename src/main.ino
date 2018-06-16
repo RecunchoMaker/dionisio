@@ -9,7 +9,7 @@ ADXL345 accel(ADXL345_ALT);
 double Setpoint, Input, Output;
 
 //Specify the links and initial tuning parameters
-double Kp=200000, Ki=10, Kd=1000;
+double Kp=8000, Ki=40, Kd=400;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 // motor pins
@@ -84,7 +84,7 @@ void setup() {
   ******************************************************************************/
   //initialize the variables we're linked to
   Input = accel.getZ();
-  Setpoint = -0.06;
+  Setpoint = 0.35;
 
   //turn the PID on
   myPID.SetOutputLimits(-126,126);
@@ -110,6 +110,7 @@ void loop() {
   Serial.print(accel.getZ());
   Serial.print("");
 # endif
+ // Serial.println(accel.getZ());
 
   Input = accel.getZ();
   myPID.Compute();
