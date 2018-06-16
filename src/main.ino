@@ -9,7 +9,7 @@ ADXL345 accel(ADXL345_ALT);
 double Setpoint, Input, Output;
 
 //Specify the links and initial tuning parameters
-double Kp=5000, Ki=1000, Kd=200;
+double Kp=200000, Ki=10, Kd=1000;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 // motor pins
@@ -84,10 +84,10 @@ void setup() {
   ******************************************************************************/
   //initialize the variables we're linked to
   Input = accel.getZ();
-  Setpoint = 0;
+  Setpoint = -0.06;
 
   //turn the PID on
-  myPID.SetOutputLimits(-128,128);
+  myPID.SetOutputLimits(-126,126);
   myPID.SetMode(AUTOMATIC);
 
   delay(3000);
@@ -100,52 +100,49 @@ void setup() {
 }
 
 void loop() {
-  if (accel.update()) {
-    /*
-    Serial.print(accel.getX());
-    Serial.print(",");
-    Serial.print(accel.getY());
-    Serial.print(",");
-    Serial.print(accel.getZ());
-    Serial.print("");
-    */
+  if (!accel.update()) return;
 
-    Input = accel.getZ();
-    myPID.Compute();
-    int speed = Output;
+# if 0
+  Serial.print(accel.getX());
+  Serial.print(",");
+  Serial.print(accel.getY());
+  Serial.print(",");
+  Serial.print(accel.getZ());
+  Serial.print("");
+# endif
 
-    /*
-    Serial.print("input: ");
-    Serial.print(Input);
-    Serial.print(" output: ");
-    Serial.println(Output);
-    Serial.print(" speed: ");
-    */
-    //Serial.println(speed);
+  Input = accel.getZ();
+  myPID.Compute();
+  int speed = Output;
 
+# if 0
+  Serial.print("input: ");
+  Serial.print(Input);
+  Serial.print(" output: ");
+  Serial.println(Output);
+  Serial.print(" speed: ");
+# endif
 
-    // delay(150);
+  // delay(150);
 
-    if (speed > 0) {
+  if (speed > 0) {
 
-        digitalWrite(speedPin1, LOW);
-        analogWrite(forwardPin1, speed);
-        digitalWrite(speedPin2, LOW);
-        analogWrite(forwardPin2, speed/3);
+      digitalWrite(speedPin1, LOW);
+      analogWrite(forwardPin1, speed);
+      digitalWrite(speedPin2, LOW);
+      analogWrite(forwardPin2, speed);
 //      motor1.forward( speed) ;	// set the direction and the speed of the motor
 //motor2.forward( int(Output) );	// set the direction and the speed of the motor
-    }
-    else {
-        
-        digitalWrite(forwardPin1, LOW);
-        analogWrite(speedPin1, -speed);
-        digitalWrite(forwardPin2, LOW);
-        analogWrite(speedPin2, -speed/3);
- //     motor1.back( speed );		// set a new direction and the speed of the motor
- //     motor2.back( int(Output) );		// set a new direction and the speed of the motor
+  }
+  else {
+      
+      digitalWrite(forwardPin1, LOW);
+      analogWrite(speedPin1, -speed);
+      digitalWrite(forwardPin2, LOW);
+      analogWrite(speedPin2, -speed);
+//     motor1.back( speed );		// set a new direction and the speed of the motor
+//     motor2.back( int(Output) );		// set a new direction and the speed of the motor
 
-    }
+  }
 
-
-  } 
 }
