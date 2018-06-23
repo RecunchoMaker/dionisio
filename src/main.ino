@@ -9,7 +9,9 @@ ADXL345 accel(ADXL345_ALT);
 double Setpoint, Input, Output;
 
 //Specify the links and initial tuning parameters
-double Kp=8000, Ki=40, Kd=400;
+// Kp > 400
+//double Kp=55500.0, Ki=1.2, Kd=0.39;
+double Kp=100000.0, Ki=20.0, Kd=5.0;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 // motor pins
@@ -21,6 +23,8 @@ const int forwardPin2 = 10;	// this is the pin that we use to tell the motor to 
 //L293_twoWire motor1( speedPin1, forwardPin1 );
 //L293_twoWire motor2( speedPin2, forwardPin2 );
 
+long int crono;
+long int muestras;
 
 void setup() {
   Serial.begin(9600);
@@ -53,7 +57,8 @@ void setup() {
   // - ADXL345_RATE_50HZ:   50 Hz
   // - ADXL345_RATE_25HZ:   25 Hz
   // - ...
-  if (!accel.writeRate(ADXL345_RATE_200HZ)) {
+  //if (!accel.writeRate(ADXL345_RATE_200HZ)) {
+  if (!accel.writeRate(ADXL345_RATE_3200HZ)) {
     Serial.println("write rate: failed");
     while(1) {
       delay(100);
@@ -84,11 +89,12 @@ void setup() {
   ******************************************************************************/
   //initialize the variables we're linked to
   Input = accel.getZ();
-  Setpoint = 0.35;
+  Setpoint = 0.085;
 
   //turn the PID on
-  myPID.SetOutputLimits(-126,126);
+  myPID.SetOutputLimits(-254.0,254.0);
   myPID.SetMode(AUTOMATIC);
+  myPID.SetSampleTime(2);
 
   delay(3000);
 
@@ -97,18 +103,31 @@ void setup() {
   pinMode(forwardPin1, OUTPUT);
   pinMode(forwardPin2, OUTPUT);
 
+  crono = millis();
+  muestras = 0;
+
 }
 
 void loop() {
   if (!accel.update()) return;
 
+  //
+  /*
+  muestras ++;
+  if (millis() - crono > 1000) {
+      // Serial.println(muestras);
+      muestras = 0;
+      crono = millis();
+  }
+  */
+
 # if 0
   Serial.print(accel.getX());
   Serial.print(",");
   Serial.print(accel.getY());
-  Serial.print(",");
+  Serial.print(", z =");
   Serial.print(accel.getZ());
-  Serial.print("");
+  Serial.println("");
 # endif
  // Serial.println(accel.getZ());
 
@@ -116,7 +135,7 @@ void loop() {
   myPID.Compute();
   int speed = Output;
 
-# if 0
+# if 1
   Serial.print("input: ");
   Serial.print(Input);
   Serial.print(" output: ");
@@ -124,9 +143,11 @@ void loop() {
   Serial.print(" speed: ");
 # endif
 
+# if 0
   // delay(150);
-
   if (speed > 0) {
+
+      speed = map(speed, 0,255,20,255);
 
       digitalWrite(speedPin1, LOW);
       analogWrite(forwardPin1, speed);
@@ -136,6 +157,8 @@ void loop() {
 //motor2.forward( int(Output) );	// set the direction and the speed of the motor
   }
   else {
+
+      speed = map(speed, 0,-255,-20,-255);
       
       digitalWrite(forwardPin1, LOW);
       analogWrite(speedPin1, -speed);
@@ -145,5 +168,6 @@ void loop() {
 //     motor2.back( int(Output) );		// set a new direction and the speed of the motor
 
   }
+# endif
 
 }
