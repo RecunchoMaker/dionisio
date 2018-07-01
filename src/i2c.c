@@ -27,7 +27,7 @@
 #include <avr/io.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "common.h"
 #include "i2c.h"
 
 /* Pointers to current txn and op. */
@@ -173,6 +173,7 @@ ISR(TWI_vect, ISR_BLOCK) {
     }
   } else {
     /* Master Transmitter mode. */
+
     switch (status) {
 
     /* A START condition has been transmitted. */
@@ -204,6 +205,7 @@ ISR(TWI_vect, ISR_BLOCK) {
 
     /* Data byte has been transmitted; ACK has been received. */
     case TW_MT_DATA_ACK:
+
       if (op->bufpos < op->buflen) {
         TWDR = op->buf[op->bufpos++];
         TWCR = TWCR_DEFAULT | _BV(TWINT);
